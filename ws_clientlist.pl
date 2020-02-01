@@ -41,6 +41,10 @@ sub parse_client($);
         }
     }
 
+    unlink $coookiefile;
+
+    exit;
+
 sub parse_client($)
 {
     my ($row) = @_;
