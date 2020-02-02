@@ -56,7 +56,8 @@ sub fetch_pagelist($){
     while ($OUT =~ /<tr>(.*?)<\/tr>/gs) {
         my $row = $1;
         if ($row =~ /var indexVal =(\d+);/s) {
-            parse_client($row);
+            my @client = parse_client($row);
+            print "$rows_found, $client[0], $client[1], $client[2], $client[4], $client[5]\n";
             $rows_found++;
         }
     }
@@ -67,8 +68,11 @@ sub parse_client($)
 {
     my ($row) = @_;
 
-    print "***\n";
-    my @fields = ($row =~ /VALUE="(.*?)"/g);
-    print join(', ', @fields) . "\n";
+    # Fields are: Client MAC Addr, IP Address, AP Name, WLAN Profile,
+    #             WLAN SSID, User Name, Protocol, Status, Auth, Port,
+    #             Slo Id, Tunnel, Fastlane, PMIPv6, WGB, Device Type,
+    #             Fabric Status, U3 Interface
+    my @fields = ($row =~ /<td.*?VALUE="(.*?)".*?<\/td>/gs);
 
+    return @fields[0..7];
 }
