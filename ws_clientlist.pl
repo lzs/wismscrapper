@@ -6,13 +6,14 @@ use File::Temp qw/ :POSIX /;
 
 use Getopt::Long;
 
-sub fetch_pagelis($);
+sub fetch_pagelis($$);
 sub parse_client($);
 
     my $USER;
     my $PASS;
     my $HOST;
     my $url;
+    my @clientlist;
 
     if (GetOptions('user=s' => \$USER,
                    'pass=s' => \$PASS,
@@ -34,16 +35,21 @@ sub parse_client($);
         my $rows_found;
 
         $page++;
-        ($rows_found, $total_entries) = fetch_pagelist($page);
+        ($rows_found, $total_entries) = fetch_pagelist($page, \@clientlist);
         $total_rows_found += $rows_found;
     } until ($total_rows_found >= $total_entries);
 
     unlink $cookiefile;
 
+    foreach (@clientlist) {
+        print join(', ', split(/\t/, $_)) . "\n";
+    }
+    print "Total clients: $#clientlist\n";
     exit;
 
-sub fetch_pagelist($){
-    my ($page) = @_;
+sub fetch_pagelist($$)
+{
+    my ($page, $clientlist) = @_;
     my $rows_found = 0;
     my $total_entries;
 
@@ -57,7 +63,7 @@ sub fetch_pagelist($){
         my $row = $1;
         if ($row =~ /var indexVal =(\d+);/s) {
             my @client = parse_client($row);
-            print "$rows_found, $client[0], $client[1], $client[2], $client[4], $client[5]\n";
+            push @$clientlist, join("\t", @client);
             $rows_found++;
         }
     }
