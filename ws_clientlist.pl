@@ -8,6 +8,7 @@ use Getopt::Long;
 
 sub fetch_pagelis($$);
 sub parse_client($);
+sub do_help();
 
     my $USER;
     my $PASS;
@@ -18,6 +19,7 @@ sub parse_client($);
     if (GetOptions('user=s' => \$USER,
                    'pass=s' => \$PASS,
                    'host=s' => \$HOST) == 0) {
+        do_help();
         die;
     }
 
@@ -81,4 +83,9 @@ sub parse_client($)
     my @fields = ($row =~ /<td.*?VALUE="(.*?)".*?<\/td>/gs);
 
     return @fields[0..7];
+}
+
+sub do_help()
+{
+
 }
