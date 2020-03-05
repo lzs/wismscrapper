@@ -20,7 +20,12 @@ sub do_help();
                    'pass=s' => \$PASS,
                    'host=s' => \$HOST) == 0) {
         do_help();
-        die;
+        exit 1;
+    }
+
+    if (!defined $HOST) {
+	do_help();
+	exit 1;
     }
 
     my $url = "https://$HOST/screens/apf/mobile_station_list.html?pgInd=";
@@ -87,5 +92,11 @@ sub parse_client($)
 
 sub do_help()
 {
+	print <<EOM;
+$0 <arguments>
 
+  --user user    Username for authentication
+  --pass pass    Password for authentication
+  --host host    Hostname or IP of WISM controller
+EOM
 }
