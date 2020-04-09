@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 
 use strict;
-
+use JSON;
 use File::Temp qw/ :POSIX /;
+use Data::Dumper;
 
 use Getopt::Long;
 
-sub fetch_pagelis($$);
+sub fetch_clientlist($$);
 sub parse_client($);
 sub do_help();
 
@@ -16,83 +17,63 @@ sub do_help();
     my $url;
     my @clientlist;
 
+    my $PAGESIZE = 100;
+
     if (GetOptions('user=s' => \$USER,
                    'pass=s' => \$PASS,
                    'host=s' => \$HOST) == 0) {
         do_help();
-        exit 1;
+        die;
     }
 
-    if (!defined $HOST) {
-	do_help();
-	exit 1;
-    }
-
-    my $url = "https://$HOST/screens/apf/mobile_station_list.html?pgInd=";
+    my $url = "https://$HOST/data/client-table.html?take=$PAGESIZE&sort[0][field]=Name&sort[0][dir]=desc&skip=";
+    #my $url = "https://$HOST/screens/apf/mobile_station_list.html?pgInd=";
 
     my $cookiefile = tmpnam();
 
     # Login to get session cookie, no need the output
-    my $OUT = qx(wget --keep-session-cookies --save-cookies $cookiefile --no-check-certificate --user $USER --password $PASS $url -O - 2> /dev/null);
+    my $OUT = qx(wget --keep-session-cookies --save-cookies $cookiefile --no-check-certificate --user $USER --password $PASS '$url' -O - 2> /dev/null);
 
-    my $page = 0;
+
     my $total_rows_found = 0;
     my $total_entries = 0;
     do {
         my $rows_found;
 
-        $page++;
-        ($rows_found, $total_entries) = fetch_pagelist($page, \@clientlist);
+        ($rows_found, $total_entries) = fetch_clientlist($total_rows_found, \@clientlist);
         $total_rows_found += $rows_found;
     } until ($total_rows_found >= $total_entries);
 
     unlink $cookiefile;
 
-    foreach (@clientlist) {
-        print join(', ', split(/\t/, $_)) . "\n";
-    }
-    print "Total clients: $#clientlist\n";
+    print Dumper(@clientlist);
+    print "Total clients: $total_entries\n";
+
     exit;
 
-sub fetch_pagelist($$)
+sub fetch_clientlist($$)
 {
-    my ($page, $clientlist) = @_;
+    my ($skip, $clientlist) = @_;
     my $rows_found = 0;
-    my $total_entries;
+    my $rows_this_fetch;
 
-    $OUT = qx(wget --load-cookies $cookiefile  --no-check-certificate --user $USER --password $PASS $url$page -O - 2> /dev/null);
+    $OUT = qx(wget --load-cookies $cookiefile  --no-check-certificate --user $USER --password $PASS '$url$skip' -O - 2> /dev/null);
 
-    if ($OUT =~ /total_entries" VALUE="(\d+)"/s) {
-        $total_entries = $1;
-    }
+    my $json = JSON->new->allow_nonref;
+    my $data = $json->decode($OUT);
 
-    while ($OUT =~ /<tr>(.*?)<\/tr>/gs) {
-        my $row = $1;
-        if ($row =~ /var indexVal =(\d+);/s) {
-            my @client = parse_client($row);
-            push @$clientlist, join("\t", @client);
-            $rows_found++;
-        }
-    }
-    return ($rows_found, $total_entries);
-}
+    $total_entries = $data->{'total'};
 
-sub parse_client($)
-{
-    my ($row) = @_;
+    push @$clientlist, @{$data->{'data'}};
 
-    # Fields are: Client MAC Addr, IP Address, AP Name, WLAN Profile,
-    #             WLAN SSID, User Name, Protocol, Status, Auth, Port,
-    #             Slo Id, Tunnel, Fastlane, PMIPv6, WGB, Device Type,
-    #             Fabric Status, U3 Interface
-    my @fields = ($row =~ /<td.*?VALUE="(.*?)".*?<\/td>/gs);
+    $rows_this_fetch = $#{$data->{'data'}} + 1;
 
-    return @fields[0..7];
+    return ($rows_this_fetch, $total_entries);
 }
 
 sub do_help()
 {
-	print <<EOM;
+    print <<EOM;
 $0 <arguments>
 
   --user user    Username for authentication
