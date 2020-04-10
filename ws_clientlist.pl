@@ -17,6 +17,9 @@ sub do_help();
     my $HOST;
     my $url;
     my $format = "macaddr,name,ap";
+    my $quiet_flag;
+    my $total_flag;
+
     my @clientlist;
 
     my $PAGESIZE = 100;
@@ -24,14 +27,15 @@ sub do_help();
     if (GetOptions('user=s' => \$USER,
                    'pass=s' => \$PASS,
                    'host=s' => \$HOST,
-                   'format=s' => \$format
+                   'format=s' => \$format,
+                   'q' => \$quiet_flag,
+                   't' => \$total_flag
                    ) == 0) {
         do_help();
         die;
     }
 
     my $url = "https://$HOST/data/client-table.html?take=$PAGESIZE&sort[0][field]=Name&sort[0][dir]=desc&skip=";
-    #my $url = "https://$HOST/screens/apf/mobile_station_list.html?pgInd=";
 
     my $cookiefile = tmpnam();
 
@@ -49,11 +53,15 @@ sub do_help();
 
     unlink $cookiefile;
 
-    foreach my $i (@clientlist) {
-        print_row($i, $format);
+    if (!defined $quiet_flag || !$quiet_flag) {
+        foreach my $i (@clientlist) {
+            print_row($i, $format);
+        }
     }
 
-    print "Total clients: $total_entries\n";
+    if (defined $total_flag && $total_flag) {
+        print "Total clients: $total_entries\n";
+    }
 
     exit;
 
@@ -106,6 +114,9 @@ sub print_row($$)
         }
         elsif ($i eq 'name') {
             push @output, $data->{'Name'};
+        }
+        elsif ($i eq 'hname') {
+            push @output, Digest::SHA::sha224_hex($data->{'Name'});
         }
         elsif ($i eq 'ss') {
             push @output, $data->{'SS'};
