@@ -24,10 +24,10 @@ sub do_help();
 
     my $PAGESIZE = 100;
 
-    if (GetOptions('user=s' => \$USER,
-                   'pass=s' => \$PASS,
-                   'host=s' => \$HOST,
-                   'format=s' => \$format,
+    if (GetOptions('u=s' => \$USER,
+                   'p=s' => \$PASS,
+                   'h=s' => \$HOST,
+                   'f=s' => \$format,
                    'q' => \$quiet_flag,
                    't' => \$total_flag
                    ) == 0) {
@@ -139,9 +139,9 @@ sub do_help()
     print <<EOM;
 $0 <arguments>
 
-  --user user    Username for authentication
-  --pass pass    Password for authentication
-  --host host    Hostname or IP of WISM controller
-  --format str   Print with specified format string
+  --u user    Username for authentication
+  --p pass    Password for authentication
+  --h host    Hostname or IP of WISM controller
+  --f str     Print with specified format string
 EOM
 }
