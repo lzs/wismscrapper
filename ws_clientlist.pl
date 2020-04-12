@@ -95,7 +95,7 @@ sub print_row($$)
             push @output, $data->{'macaddr'};
         }
         elsif ($i eq 'hmacaddr') {
-            push @output, Digest::SHA::sha224_hex($data->{'AP'});
+            push @output, Digest::SHA::sha224_hex($data->{'macaddr'});
         }
         elsif ($i eq 'ssid') {
             push @output, $data->{'SSID'};
