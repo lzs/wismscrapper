@@ -130,6 +130,9 @@ sub print_row($$)
         elsif ($i eq 'ap') {
             push @output, $data->{'AP'};
         }
+        elsif ($i eq 'ts') {
+            push @output, time();
+        }
     }
     print join(',', @output) . "\n";
 }
