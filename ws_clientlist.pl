@@ -145,9 +145,23 @@ sub do_help()
     print <<EOM;
 $0 <arguments>
 
-  --u user    Username for authentication
-  --p pass    Password for authentication
-  --h host    Hostname or IP of WISM controller
-  --f str     Print with specified format string
+  -u user    Username for authentication
+  -p pass    Password for authentication
+  -h host    Hostname or IP of WISM controller
+  -f str     Print with specified format string
+
+Format (* hash available by prefixing with h):
+  macaddr*    = MAC Address
+  name*       = User Name
+  ss          = Signal Strength
+  sd          = Speed
+  st          = Status
+  pt          = Physical Type (radio)
+  ap*         = AP Name
+  devtype     = Device Type
+  bytes_total = Bytes Total
+  ut          = Uptime
+  ssid        = SSID
+
 EOM
 }
