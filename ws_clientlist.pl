@@ -16,6 +16,7 @@ sub do_help();
     my $PASS;
     my $HOST;
     my $url;
+    my $secret = '';
     my $format = "macaddr,name,ap";
     my $quiet_flag;
     my $total_flag;
@@ -28,6 +29,7 @@ sub do_help();
                    'p=s' => \$PASS,
                    'h=s' => \$HOST,
                    'f=s' => \$format,
+                   's=s' => \$secret,
                    'q' => \$quiet_flag,
                    't' => \$total_flag
                    ) == 0) {
@@ -95,7 +97,7 @@ sub print_row($$)
             push @output, $data->{'macaddr'};
         }
         elsif ($i eq 'hmacaddr') {
-            push @output, Digest::SHA::sha224_hex($data->{'macaddr'});
+            push @output, Digest::SHA::sha224_hex($secret . $data->{'macaddr'});
         }
         elsif ($i eq 'ssid') {
             push @output, $data->{'SSID'};
@@ -116,7 +118,7 @@ sub print_row($$)
             push @output, $data->{'Name'};
         }
         elsif ($i eq 'hname') {
-            push @output, Digest::SHA::sha224_hex($data->{'Name'});
+            push @output, Digest::SHA::sha224_hex($secret . $data->{'Name'});
         }
         elsif ($i eq 'ss') {
             push @output, $data->{'SS'};
@@ -131,7 +133,7 @@ sub print_row($$)
             push @output, $data->{'AP'};
         }
         elsif ($i eq 'hap') {
-            push @output, Digest::SHA::sha224_hex($data->{'AP'});
+            push @output, Digest::SHA::sha224_hex($secret . $data->{'AP'});
         }
         elsif ($i eq 'ts') {
             push @output, time();
