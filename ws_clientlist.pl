@@ -106,7 +106,8 @@ sub print_row($$)
             push @output, $data->{'UT'};
         }
         elsif ($i eq 'pt') {
-            push @output, $data->{'PT'};
+            (my $pt = $data->{'PT'}) =~ s/\s+$//;
+            push @output, $pt
         }
         elsif ($i eq 'devtype') {
             push @output, $data->{'devtype'};
@@ -151,6 +152,7 @@ $0 <arguments>
   -p pass    Password for authentication
   -h host    Hostname or IP of WISM controller
   -f str     Print with specified format string
+  -t         Print total count
 
 Format (* hash available by prefixing with h):
   macaddr*    = MAC Address
